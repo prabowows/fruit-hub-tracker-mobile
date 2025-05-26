@@ -1,54 +1,32 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MapPin, Camera, Clock, CheckCircle, FileText, Calendar } from 'lucide-react';
+import { Minus } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 const ClockInOut = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isClockingIn, setIsClockingIn] = useState(false);
-  const [lastAction, setLastAction] = useState<'in' | 'out' | null>(null);
-  const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const [workingHours, setWorkingHours] = useState('8 Jam 0 Menit');
 
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
 
-    // Get user location
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setLocation({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          });
-        },
-        (error) => {
-          console.error('Error getting location:', error);
-        }
-      );
-    }
-
     return () => clearInterval(timer);
   }, []);
 
-  const handleClockAction = async (action: 'in' | 'out') => {
+  const handleClockAction = async () => {
     setIsClockingIn(true);
 
     try {
       // Simulate GPS and camera verification
       await new Promise(resolve => setTimeout(resolve, 2000));
 
-      const actionText = action === 'in' ? 'Masuk' : 'Keluar';
       const time = currentTime.toLocaleTimeString('id-ID');
       
-      setLastAction(action);
-      
       toast({
-        title: `Absen ${actionText} Berhasil`,
+        title: "Absen Masuk Berhasil",
         description: `Tercatat pada ${time}`,
       });
 
@@ -63,126 +41,143 @@ const ClockInOut = () => {
     }
   };
 
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString('id-ID', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+  };
+
+  const formatDate = (date: Date) => {
+    const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+    
+    const dayName = days[date.getDay()];
+    const day = date.getDate();
+    const month = months[date.getMonth()];
+    const year = date.getFullYear();
+    
+    return `${dayName}, ${day} ${month} ${year}`;
+  };
+
   return (
-    <div className="p-4 space-y-6">
-      {/* Time Display */}
-      <Card>
-        <CardContent className="p-6 text-center">
-          <div className="text-4xl font-bold text-fruithub-primary">
-            {currentTime.toLocaleTimeString('id-ID')}
-          </div>
-          <div className="text-gray-600 mt-2">
-            {currentTime.toLocaleDateString('id-ID', { 
-              weekday: 'long', 
-              day: 'numeric', 
-              month: 'long', 
-              year: 'numeric' 
-            })}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Status Cards */}
-      <div className="grid grid-cols-2 gap-4">
-        <Card>
-          <CardContent className="p-4 text-center">
-            <CheckCircle className="h-8 w-8 text-fruithub-accent mx-auto mb-2" />
-            <div className="text-sm text-gray-600">Absen Masuk</div>
-            <div className="font-semibold text-fruithub-primary">08:20:31</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4 text-center">
-            <Clock className="h-8 w-8 text-fruithub-secondary mx-auto mb-2" />
-            <div className="text-sm text-gray-600">Absen Keluar</div>
-            <div className="font-semibold text-fruithub-primary">17:40:50</div>
-          </CardContent>
-        </Card>
+    <div className="min-h-screen bg-gradient-to-b from-orange-100 via-orange-50 to-white p-6 flex flex-col">
+      {/* Time and Date Section */}
+      <div className="text-center mt-8 mb-16">
+        <div className="text-6xl font-light text-gray-800 mb-2">
+          {formatTime(currentTime)}
+        </div>
+        <div className="text-gray-500 text-lg">
+          {formatDate(currentTime)}
+        </div>
       </div>
 
-      {/* Clock In/Out Buttons */}
-      <div className="space-y-4">
-        <Button
-          onClick={() => handleClockAction('in')}
-          disabled={isClockingIn || lastAction === 'in'}
-          className="w-full h-16 bg-fruithub-accent hover:bg-green-600 text-white font-semibold text-lg rounded-full"
-        >
-          {isClockingIn ? (
-            <div className="flex items-center space-x-2">
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-              <span>Memverifikasi...</span>
-            </div>
-          ) : (
-            <div className="flex items-center space-x-2">
-              <Clock className="h-6 w-6" />
-              <span>Absen Masuk</span>
-            </div>
-          )}
-        </Button>
-
-        <Button
-          onClick={() => handleClockAction('out')}
-          disabled={isClockingIn || lastAction !== 'in'}
-          className="w-full h-16 bg-fruithub-primary hover:bg-red-800 text-white font-semibold text-lg rounded-full"
-        >
-          {isClockingIn ? (
-            <div className="flex items-center space-x-2">
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-              <span>Memverifikasi...</span>
-            </div>
-          ) : (
-            <div className="flex items-center space-x-2">
-              <Clock className="h-6 w-6" />
-              <span>Absen Keluar</span>
-            </div>
-          )}
-        </Button>
-      </div>
-
-      {/* Additional Info */}
-      <div className="grid grid-cols-2 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <MapPin className="h-5 w-5 text-fruithub-secondary" />
-              <div>
-                <div className="text-sm text-gray-600">Lokasi</div>
-                <div className="font-semibold">Store Fruithub</div>
+      {/* Main Attendance Button */}
+      <div className="flex-1 flex items-center justify-center">
+        <div className="relative">
+          <Button
+            onClick={handleClockAction}
+            disabled={isClockingIn}
+            className="w-64 h-64 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 hover:from-orange-500 hover:to-orange-700 shadow-2xl border-0 transition-all duration-300 transform hover:scale-105"
+          >
+            {isClockingIn ? (
+              <div className="flex flex-col items-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mb-4"></div>
+                <span className="text-white font-semibold text-lg">Memverifikasi...</span>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Camera className="h-5 w-5 text-fruithub-accent" />
-              <div>
-                <div className="text-sm text-gray-600">Jam Kerja</div>
-                <div className="font-semibold">{workingHours}</div>
+            ) : (
+              <div className="flex flex-col items-center">
+                {/* Pointing Hand Icon */}
+                <svg 
+                  width="80" 
+                  height="80" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  className="text-white mb-4"
+                >
+                  <path 
+                    d="M8 11V7C8 5.89543 8.89543 5 10 5C11.1046 5 12 5.89543 12 7V11M8 11L8.5 16C8.5 17.3807 9.61929 18.5 11 18.5H13C14.3807 18.5 15.5 17.3807 15.5 16L16 11M8 11H6.5C5.67157 11 5 10.3284 5 9.5C5 8.67157 5.67157 8 6.5 8H8M16 11H17.5C18.3284 11 19 10.3284 19 9.5C19 8.67157 18.3284 8 17.5 8H16M12 11V9C12 7.89543 12.8954 7 14 7C15.1046 7 16 7.89543 16 9V11M10 11V8C10 6.89543 10.8954 6 12 6C13.1046 6 14 6.89543 14 8V11" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                    fill="currentColor"
+                  />
+                </svg>
+                <span className="text-white font-semibold text-xl">Absen Masuk</span>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            )}
+          </Button>
+        </div>
       </div>
 
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Aksi Cepat</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <Button variant="outline" className="w-full justify-start">
-            <FileText className="h-4 w-4 mr-2" />
-            Ijin tidak hadir
+      {/* Bottom Action Buttons */}
+      <div className="flex justify-center space-x-8 mb-8">
+        <div className="flex flex-col items-center">
+          <Button
+            variant="outline"
+            size="icon"
+            className="w-16 h-16 rounded-full bg-white border-red-200 hover:bg-red-50 shadow-lg"
+          >
+            <Minus className="h-6 w-6 text-red-500" />
           </Button>
-          <Button variant="outline" className="w-full justify-start">
-            <Calendar className="h-4 w-4 mr-2" />
-            Lihat History
+          <span className="text-sm text-gray-600 mt-2">Ijin tidak hadir</span>
+        </div>
+        
+        <div className="flex flex-col items-center">
+          <Button
+            variant="outline"
+            size="icon"
+            className="w-16 h-16 rounded-full bg-white border-orange-200 hover:bg-orange-50 shadow-lg"
+          >
+            <svg 
+              width="24" 
+              height="24" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              className="text-orange-500"
+            >
+              <path 
+                d="M3 6H21L19 18H5L3 6Z" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              />
+              <path 
+                d="M8 6V4C8 2.89543 8.89543 2 10 2H14C15.1046 2 16 2.89543 16 4V6" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              />
+              <path 
+                d="M8 10H8.01" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              />
+              <path 
+                d="M12 10H12.01" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              />
+              <path 
+                d="M16 10H16.01" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              />
+            </svg>
           </Button>
-        </CardContent>
-      </Card>
+          <span className="text-sm text-gray-600 mt-2">Lihat History</span>
+        </div>
+      </div>
     </div>
   );
 };
