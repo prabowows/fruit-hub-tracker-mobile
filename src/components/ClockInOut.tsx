@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MapPin, Camera, Clock, CheckCircle } from 'lucide-react';
+import { MapPin, Camera, Clock, CheckCircle, FileText, Calendar } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 const ClockInOut = () => {
