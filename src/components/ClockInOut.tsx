@@ -1,12 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Minus } from 'lucide-react';
+import { Minus, List } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 const ClockInOut = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isClockingIn, setIsClockingIn] = useState(false);
+  const [isClockedIn, setIsClockedIn] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -25,10 +26,21 @@ const ClockInOut = () => {
 
       const time = currentTime.toLocaleTimeString('id-ID');
       
-      toast({
-        title: "Absen Masuk Berhasil",
-        description: `Tercatat pada ${time}`,
-      });
+      if (isClockedIn) {
+        // Clock out
+        setIsClockedIn(false);
+        toast({
+          title: "Absen Keluar Berhasil",
+          description: `Tercatat pada ${time}`,
+        });
+      } else {
+        // Clock in
+        setIsClockedIn(true);
+        toast({
+          title: "Absen Masuk Berhasil",
+          description: `Tercatat pada ${time}`,
+        });
+      }
 
     } catch (error) {
       toast({
@@ -79,7 +91,11 @@ const ClockInOut = () => {
           <Button
             onClick={handleClockAction}
             disabled={isClockingIn}
-            className="w-64 h-64 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 hover:from-orange-500 hover:to-orange-700 shadow-2xl border-0 transition-all duration-300 transform hover:scale-105"
+            className={`w-64 h-64 rounded-full ${
+              isClockedIn 
+                ? 'bg-gradient-to-br from-red-500 to-red-700 hover:from-red-600 hover:to-red-800' 
+                : 'bg-gradient-to-br from-orange-400 to-orange-600 hover:from-orange-500 hover:to-orange-700'
+            } shadow-2xl border-0 transition-all duration-300 transform hover:scale-105`}
           >
             {isClockingIn ? (
               <div className="flex flex-col items-center">
@@ -105,7 +121,9 @@ const ClockInOut = () => {
                     fill="currentColor"
                   />
                 </svg>
-                <span className="text-white font-semibold text-xl">Absen Masuk</span>
+                <span className="text-white font-semibold text-xl">
+                  {isClockedIn ? 'Absen Keluar' : 'Absen Masuk'}
+                </span>
               </div>
             )}
           </Button>
@@ -118,9 +136,9 @@ const ClockInOut = () => {
           <Button
             variant="outline"
             size="icon"
-            className="w-16 h-16 rounded-full bg-white border-red-200 hover:bg-red-50 shadow-lg"
+            className="w-20 h-20 rounded-full bg-white border-red-200 hover:bg-red-50 shadow-lg"
           >
-            <Minus className="h-6 w-6 text-red-500" />
+            <Minus className="h-8 w-8 text-red-500" />
           </Button>
           <span className="text-sm text-gray-600 mt-2">Ijin tidak hadir</span>
         </div>
@@ -129,51 +147,9 @@ const ClockInOut = () => {
           <Button
             variant="outline"
             size="icon"
-            className="w-16 h-16 rounded-full bg-white border-orange-200 hover:bg-orange-50 shadow-lg"
+            className="w-20 h-20 rounded-full bg-white border-orange-200 hover:bg-orange-50 shadow-lg"
           >
-            <svg 
-              width="24" 
-              height="24" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              className="text-orange-500"
-            >
-              <path 
-                d="M3 6H21L19 18H5L3 6Z" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-              />
-              <path 
-                d="M8 6V4C8 2.89543 8.89543 2 10 2H14C15.1046 2 16 2.89543 16 4V6" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-              />
-              <path 
-                d="M8 10H8.01" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-              />
-              <path 
-                d="M12 10H12.01" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-              />
-              <path 
-                d="M16 10H16.01" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-              />
-            </svg>
+            <List className="h-8 w-8 text-orange-500" />
           </Button>
           <span className="text-sm text-gray-600 mt-2">Lihat History</span>
         </div>
