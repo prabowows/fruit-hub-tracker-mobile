@@ -17,22 +17,41 @@ const queryClient = new QueryClient();
 
 const AppContent = () => {
   const [showSplash, setShowSplash] = useState(true);
+  const [isInitialized, setIsInitialized] = useState(false);
   const { user, isLoading } = useAuth();
 
   const handleSplashComplete = () => {
     setShowSplash(false);
   };
 
-  // Hide splash screen if user is already authenticated or after loading completes
+  // Mark as initialized after first render
   useEffect(() => {
-    if (user || (!isLoading && !user)) {
-      setShowSplash(false);
-    }
-  }, [user, isLoading]);
+    setIsInitialized(true);
+  }, []);
 
-  // Only show splash screen during initial load when auth state is being determined
-  if (showSplash && isLoading && !user) {
+  // Hide splash screen when auth state is determined
+  useEffect(() => {
+    if (!isLoading) {
+      // Small delay to ensure smooth transition
+      const timer = setTimeout(() => {
+        setShowSplash(false);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading]);
+
+  // Only show splash screen during initial load
+  if (showSplash && isInitialized && isLoading) {
     return <SplashScreen onComplete={handleSplashComplete} />;
+  }
+
+  // Show loading state if not initialized yet
+  if (!isInitialized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-black">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-500"></div>
+      </div>
+    );
   }
 
   return (
