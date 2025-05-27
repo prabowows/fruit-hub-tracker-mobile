@@ -2,12 +2,12 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Minus, List } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { useAttendance } from '@/hooks/useAttendance';
 
 const ClockInOut = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [isClockingIn, setIsClockingIn] = useState(false);
-  const [isClockedIn, setIsClockedIn] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const { todayAttendance, clockIn, clockOut, isLoading } = useAttendance();
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -17,39 +17,45 @@ const ClockInOut = () => {
     return () => clearInterval(timer);
   }, []);
 
+  const isClockedIn = todayAttendance?.clock_in_time && !todayAttendance?.clock_out_time;
+
   const handleClockAction = async () => {
-    setIsClockingIn(true);
+    setIsProcessing(true);
 
     try {
-      // Simulate GPS and camera verification
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      const time = currentTime.toLocaleTimeString('id-ID');
+      // Get user location (optional)
+      let location: { lat: number; lng: number } | undefined;
       
-      if (isClockedIn) {
-        // Clock out
-        setIsClockedIn(false);
-        toast({
-          title: "Absen Keluar Berhasil",
-          description: `Tercatat pada ${time}`,
-        });
-      } else {
-        // Clock in
-        setIsClockedIn(true);
-        toast({
-          title: "Absen Masuk Berhasil",
-          description: `Tercatat pada ${time}`,
-        });
+      if ('geolocation' in navigator) {
+        try {
+          const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, {
+              timeout: 5000,
+              enableHighAccuracy: true,
+            });
+          });
+          
+          location = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          };
+        } catch (error) {
+          console.log('Location not available:', error);
+        }
       }
 
+      // Simulate processing delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      if (isClockedIn) {
+        await clockOut(location);
+      } else {
+        await clockIn(location);
+      }
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Gagal melakukan absensi",
-        variant: "destructive",
-      });
+      console.error('Clock action error:', error);
     } finally {
-      setIsClockingIn(false);
+      setIsProcessing(false);
     }
   };
 
@@ -73,6 +79,14 @@ const ClockInOut = () => {
     return `${dayName}, ${day} ${month} ${year}`;
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-orange-100 via-orange-50 to-white p-6 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-fruithub-primary"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-100 via-orange-50 to-white p-6 flex flex-col">
       {/* Time and Date Section */}
@@ -83,6 +97,24 @@ const ClockInOut = () => {
         <div className="text-gray-500 text-lg">
           {formatDate(currentTime)}
         </div>
+        
+        {/* Show attendance status */}
+        {todayAttendance && (
+          <div className="mt-4 p-4 bg-white rounded-lg shadow-md">
+            {todayAttendance.clock_in_time && (
+              <div className="text-sm text-gray-600">
+                <span className="font-semibold">Masuk: </span>
+                {new Date(todayAttendance.clock_in_time).toLocaleTimeString('id-ID')}
+              </div>
+            )}
+            {todayAttendance.clock_out_time && (
+              <div className="text-sm text-gray-600">
+                <span className="font-semibold">Keluar: </span>
+                {new Date(todayAttendance.clock_out_time).toLocaleTimeString('id-ID')}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Main Attendance Button */}
@@ -90,17 +122,17 @@ const ClockInOut = () => {
         <div className="relative">
           <Button
             onClick={handleClockAction}
-            disabled={isClockingIn}
+            disabled={isProcessing}
             className={`w-64 h-64 rounded-full ${
               isClockedIn 
                 ? 'bg-gradient-to-br from-red-500 to-red-700 hover:from-red-600 hover:to-red-800' 
                 : 'bg-gradient-to-br from-orange-400 to-orange-600 hover:from-orange-500 hover:to-orange-700'
             } shadow-2xl border-0 transition-all duration-300 transform hover:scale-105`}
           >
-            {isClockingIn ? (
+            {isProcessing ? (
               <div className="flex flex-col items-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mb-4"></div>
-                <span className="text-white font-semibold text-lg">Memverifikasi...</span>
+                <span className="text-white font-semibold text-lg">Memproses...</span>
               </div>
             ) : (
               <div className="flex flex-col items-center">
