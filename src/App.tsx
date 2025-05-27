@@ -23,15 +23,15 @@ const AppContent = () => {
     setShowSplash(false);
   };
 
-  // Hide splash screen if user is already authenticated
+  // Hide splash screen if user is already authenticated or after loading completes
   useEffect(() => {
-    if (user && !isLoading) {
+    if (user || (!isLoading && !user)) {
       setShowSplash(false);
     }
   }, [user, isLoading]);
 
-  // Don't show splash if user is authenticated or loading auth state
-  if (showSplash && !user && !isLoading) {
+  // Only show splash screen during initial load when auth state is being determined
+  if (showSplash && isLoading && !user) {
     return <SplashScreen onComplete={handleSplashComplete} />;
   }
 
