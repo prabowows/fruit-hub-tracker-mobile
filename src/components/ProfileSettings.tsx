@@ -46,7 +46,7 @@ const ProfileSettings = () => {
             <User className="h-5 w-5 text-fruithub-secondary" />
             <div>
               <div className="text-sm text-gray-600">ID Karyawan</div>
-              <div className="font-semibold">{user?.employeeId}</div>
+              <div className="font-semibold">{user?.employee_id}</div>
             </div>
           </div>
           
@@ -62,7 +62,7 @@ const ProfileSettings = () => {
             <Phone className="h-5 w-5 text-fruithub-secondary" />
             <div>
               <div className="text-sm text-gray-600">Telepon</div>
-              <div className="font-semibold">+62 812-3456-7890</div>
+              <div className="font-semibold">{user?.phone || '+62 812-3456-7890'}</div>
             </div>
           </div>
           
@@ -70,7 +70,7 @@ const ProfileSettings = () => {
             <MapPin className="h-5 w-5 text-fruithub-secondary" />
             <div>
               <div className="text-sm text-gray-600">Alamat</div>
-              <div className="font-semibold">Jakarta, Indonesia</div>
+              <div className="font-semibold">{user?.address || 'Jakarta, Indonesia'}</div>
             </div>
           </div>
         </CardContent>

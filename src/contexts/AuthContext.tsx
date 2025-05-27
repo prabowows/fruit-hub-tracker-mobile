@@ -44,7 +44,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return null;
       }
 
-      return data;
+      // Type cast the role to ensure it matches our UserProfile interface
+      return {
+        ...data,
+        role: data.role as 'admin' | 'employee'
+      } as UserProfile;
     } catch (error) {
       console.error('Error fetching user profile:', error);
       return null;

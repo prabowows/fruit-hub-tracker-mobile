@@ -40,7 +40,15 @@ export const useAttendance = () => {
         return;
       }
 
-      setTodayAttendance(data);
+      // Type cast the status to ensure it matches our AttendanceRecord interface
+      if (data) {
+        setTodayAttendance({
+          ...data,
+          status: data.status as 'present' | 'absent' | 'late' | 'early_leave'
+        });
+      } else {
+        setTodayAttendance(null);
+      }
     } catch (error) {
       console.error('Error fetching today attendance:', error);
     }
@@ -63,7 +71,13 @@ export const useAttendance = () => {
         return;
       }
 
-      setAttendanceHistory(data || []);
+      // Type cast the status for each record
+      const typedData = (data || []).map(record => ({
+        ...record,
+        status: record.status as 'present' | 'absent' | 'late' | 'early_leave'
+      }));
+
+      setAttendanceHistory(typedData);
     } catch (error) {
       console.error('Error fetching attendance history:', error);
     }
@@ -96,7 +110,12 @@ export const useAttendance = () => {
         return false;
       }
 
-      setTodayAttendance(data);
+      // Type cast the returned data
+      setTodayAttendance({
+        ...data,
+        status: data.status as 'present' | 'absent' | 'late' | 'early_leave'
+      });
+      
       toast({
         title: "Absen Masuk Berhasil",
         description: `Tercatat pada ${now.toLocaleTimeString('id-ID')}`,
@@ -132,7 +151,12 @@ export const useAttendance = () => {
         return false;
       }
 
-      setTodayAttendance(data);
+      // Type cast the returned data
+      setTodayAttendance({
+        ...data,
+        status: data.status as 'present' | 'absent' | 'late' | 'early_leave'
+      });
+      
       toast({
         title: "Absen Keluar Berhasil",
         description: `Tercatat pada ${now.toLocaleTimeString('id-ID')}`,
